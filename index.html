@@ -30,6 +30,14 @@
       }
     });
 
+    svgInput.addEventListener('click', () => {
+      svgInput.select();
+    });
+
+    output.addEventListener('click', () => {
+      output.select();
+    });
+
     function processCode(svgCode) {
       // 1. Wrap the SVG code in a JSX component
       const jsxComponent = `import React from 'react';
@@ -38,7 +46,8 @@ const SvgComponent = ({ width = 16, height = 16, ...remainingProps }) => (
   ${svgCode}
 );
 
-export default SvgComponent;`;
+export default SvgComponent;
+`;
 
       // 2. Add width, height, and className props to the <svg> tag, and remove existing ones
       const modifiedSvgCode = jsxComponent.replace(

@@ -52,7 +52,7 @@ export default SvgComponent;
       // 2. Add width, height, and className props to the <svg> tag, and remove existing ones
       const modifiedSvgCode = jsxComponent.replace(
         /<svg([\s\S]*?)>/,
-        (match, attrs) => `<svg${attrs.replace(/(width|height|className)="([^"]*?)"/gi, '')} width={width} height={height} className="svg-wrapper" {...remainingProps}>`
+        (match, attrs) => `<svg${attrs.replace(/(width|height|class)="([^"]*?)"/gi, '')} width={width} height={height} className="svg-wrapper" {...remainingProps}>`
       );
 
       // 3. Replace fill-rule, clip-rule, and clip-path with their React style equivalents

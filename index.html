@@ -40,9 +40,10 @@
 
     function processCode(svgCode) {
       // 1. Wrap the SVG code in a JSX component
-      const jsxComponent = `import React from 'react';
+      const jsxComponent = `import React from "react";
+import { clsx } from "/src/utils/functions";
 
-const SvgComponent = ({ width = 16, height = 16, ...remainingProps }) => (
+const SvgComponent = ({ width = 16, height = 16, className, ...remainingProps }) => (
   ${svgCode}
 );
 
@@ -52,7 +53,7 @@ export default SvgComponent;
       // 2. Add width, height, and className props to the <svg> tag, and remove existing ones
       const modifiedSvgCode = jsxComponent.replace(
         /<svg([\s\S]*?)>/,
-        (match, attrs) => `<svg${attrs.replace(/(width|height|class)="([^"]*?)"/gi, '')} width={width} height={height} className="svg-wrapper" {...remainingProps}>`
+        (match, attrs) => `<svg${attrs.replace(/(width|height|class)="([^"]*?)"/gi, '')} width={width} height={height} className={clsx("svg-wrapper", className)} {...remainingProps}>`
       );
 
       // 3. Replace fill-rule, clip-rule, and clip-path with their React style equivalents

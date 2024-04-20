@@ -80,17 +80,17 @@ export default SvgComponent;
         result = result.replace(regex, `${replace}="$1"`);
       }
 
-      // 4. Replace clipPath="url(#clip0_3453_5871)" with clipPath="url(.clip0_3453_5871)"
-      result = result.replace(/clipPath="url\(#([\w\d_]+)\)"/g, 'clipPath="url(.$1)"');
-
-      // 5. Replace id="clip0_3453_5871" with className="clip0_3453_5871"
+      // 4. Replace id="clip0_3453_5871" with className="clip0_3453_5871"
       result = result.replace(/id="([\w\d_]+)"/g, 'className="$1"');
 
-      // 6. Add className="svg-fill" to each <path> element
+      // 5. Add className="svg-fill" to each <path> element
       result = result.replace(/<path/g, '<path className="svg-fill"');
 
-      // 7. Replace multiple spaces with a single space within the <svg> tag
+      // 6. Replace multiple spaces with a single space within the <svg> tag
       result = result.replace(/<svg([\s\S]*?)>/, (match, attrs) => `<svg${attrs.replace(/\s+/g, ' ')}>`);
+
+      // 7. Replace clipPath="url(#clip0_3453_5871)" with clipPath="url(.clip0_3453_5871)"
+      result = result.replace(/clipPath="url\(#([\w\d_]+)\)"/g, 'clipPath="url(.$1)"');
 
       // 8. Remove attributes with empty values
       result = result.replace(/\s+\w+=""/g, '');

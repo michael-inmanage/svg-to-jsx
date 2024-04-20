@@ -90,7 +90,10 @@ export default SvgComponent;
       result = result.replace(/<path/g, '<path className="svg-fill"');
 
       // 7. Replace multiple spaces with a single space within the <svg> tag
-      result = result.replace(/<svg([\s\S]*?)>/, (match, attrs) => `<svg${attrs.replace(/\s+/g, ' ')}>`)
+      result = result.replace(/<svg([\s\S]*?)>/, (match, attrs) => `<svg${attrs.replace(/\s+/g, ' ')}>`);
+
+      // 8. Remove attributes with empty values
+      result = result.replace(/\s+\w+=""/g, '');
 
       return result;
     }

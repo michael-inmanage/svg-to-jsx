@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SVG Code Converter</title>
+    <style>
+        textarea {
+            width: 45%;
+            height: 300px;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+<textarea id="svgInput" placeholder="Paste your SVG code here"></textarea>
+<textarea id="output" placeholder="Output will appear here" readonly></textarea>
+
+<script>
+  const svgInput = document.getElementById('svgInput');
+  const output = document.getElementById('output');
+
+  svgInput.addEventListener('input', () => {
+    const svgCode = svgInput.value.trim();
+    if (svgCode) {
+      const convertedCode = processCode(svgCode);
+      output.value = convertedCode;
+    } else {
+      output.value = '';
+    }
+  });
+
+  svgInput.addEventListener('click', () => {
+    svgInput.select();
+  });
+
+  output.addEventListener('click', () => {
+    output.select();
+  });
+
+  function processCode(svgCode) {
+    // 1. Wrap the SVG code in a JSX component
+    const jsxComponent = `import React from 'react';
+import { clsx } from 'utils/functions';
+
+const SvgComponent = ({ width = 16, height = 16, className, ...remainingProps }) => (
+  ${svgCode}
+);
+
+export default SvgComponent;
+`;
+
+    // 2. Add width, height, and className props to the <svg> tag, and remove existing ones
+    const modifiedSvgCode = jsxComponent.replace(
+      /<svg([\s\S]*?)>/,
+      (match, attrs) => `<svg${attrs.replace(/(width|height|class)="([^"]*?)"/gi, '')} width={width} height={height} className={clsx('svg-wrapper', className)} {...remainingProps}>`
+    );
+
+    // 3. Replace fill-rule, clip-rule, and clip-path with their React style equivalents
+    const replacements = {
+      'clip-path': 'clipPath',
+      'clip-rule': 'clipRule',
+      'fill-opacity': 'fillOpacity',
+      'fill-rule': 'fillRule',
+      'overline-position': 'overlinePosition',
+      'overline-thickness': 'overlineThickness',
+      'shape-rendering': 'shapeRendering',
+      'stroke-dasharray': 'strokeDasharray',
+      'stroke-dashoffset': 'strokeDashoffset',
+      'stroke-linecap': 'strokeLinecap',
+      'stroke-linejoin': 'strokeLinejoin',
+      'stroke-miterlimit': 'strokeMiterlimit',
+      'stroke-opacity': 'strokeOpacity',
+      'stroke-width': 'strokeWidth',
+    };
+
+    let result = modifiedSvgCode;
+    for (const [search, replace] of Object.entries(replacements)) {
+      const regex = new RegExp(`${search}="([^"]*)"`, 'g');
+      result = result.replace(regex, `${replace}="$1"`);
+    }
+
+    // 4. Replace id="clip0_3453_5871" with className="clip0_3453_5871"
+    result = result.replace(/id="([\w\d_]+)"/g, 'className="$1"');
+
+    // Note about 5th step:
+    // This approach forces each <path> to have only one or the other attribute.
+    // If we'll have a <path> that used both fill and stroke simultaneously, we’d need to adapt the logic further.
+
+    // ----------------------------------------------------
+    // 5. For each <path>, set fill or stroke to currentColor,
+    //    and add the correct className based on whether a stroke attribute is present
+    // ----------------------------------------------------
+    result = result.replace(/<path([^>]*)>/gi, (fullMatch, inside) => {
+      // 5a. Check if there's a stroke attribute in the original path
+      const hasStroke = /\sstroke=/i.test(inside);
+
+      // 5b. Remove any existing fill or stroke attribute to avoid duplication/conflicts
+      let newInside = inside
+        .replace(/\sfill="[^"]*"/gi, '')
+        .replace(/\sstroke="[^"]*"/gi, '');
+
+      // 5c. Add fill="currentColor" if there's no stroke, otherwise stroke="currentColor"
+      if (hasStroke) {
+        newInside += ' stroke="currentColor"';
+      } else {
+        newInside += ' fill="currentColor"';
+      }
+
+      // 5d. Remove any existing className
+      newInside = newInside.replace(/\sclassName="[^"]*"/gi, '');
+
+      // 5e. Add className="svg-stroke" if there was a stroke attribute, else "svg-fill"
+      const pathClass = hasStroke ? 'svg-stroke' : 'svg-fill';
+      newInside += ` className="${pathClass}"`;
+
+      // Reconstruct the <path> tag
+      return `<path${newInside}>`;
+    });
+    // ----------------------------------------------------
+    // End of <path> processing
+    // ----------------------------------------------------
+
+    // 6. Replace multiple spaces with a single space within the <svg> tag
+    result = result.replace(/<svg([\s\S]*?)>/, (match, attrs) => `<svg${attrs.replace(/\s+/g, ' ')}>`);
+
+    // 7. Replace clipPath="url(#clip0_3453_5871)" with clipPath="url(.clip0_3453_5871)"
+    result = result.replace(/clipPath="url\(#([\w\d_]+)\)"/g, 'clipPath="url(.$1)"');
+
+    // 8. Remove attributes with empty values
+    result = result.replace(/\s+\w+=""/g, '');
+
+    return result;
+  }
+</script>
+</body>
+</html>
